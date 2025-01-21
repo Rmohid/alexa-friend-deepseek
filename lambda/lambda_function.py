@@ -8,13 +8,26 @@ import requests
 import json
 import os
 import sys
+import time
+import logging
+import traceback
 from datetime import datetime, timedelta
+from aws_xray_sdk.core import patch_all
+from aws_xray_sdk.core import xray_recorder
+
+# Configure logging
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+# Initialize X-Ray
+patch_all()
 
 class LaunchRequestHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
         return handler_input.request_envelope.request.type == "LaunchRequest"
 
     def handle(self, handler_input):
+        logger.info("Handling LaunchRequest")
         speak_output = ("Hi! I'm your DeepSeek friend, ready to help you understand anything. "
                        "What would you like to learn about? "
                        "Just ask me any question!")
@@ -35,15 +48,21 @@ class AskDeepseekIntentHandler(AbstractRequestHandler):
         """Format response with SSML voice"""
         return f'<speak><voice name="Joanna">{text}</voice></speak>'
 
+    @xray_recorder.capture('handle_ask_intent')
     def handle(self, handler_input):
         try:
+            request_id = handler_input.request_envelope.request.request_id
+            logger.info(f"Processing AskIntent request. RequestId: {request_id}")
+            
             # Get the prompt from the slot value
             slots = handler_input.request_envelope.request.intent.slots
             prompt = slots["prompt"].value
+            logger.info(f"Received prompt: {prompt}")
 
             # Get API key from environment
             api_key = os.environ.get('OPENROUTER_API_KEY')
             if not api_key:
+                logger.error("OPENROUTER_API_KEY environment variable not set")
                 return (
                     handler_input.response_builder
                         .speak(self.format_response(
@@ -64,16 +83,31 @@ class AskDeepseekIntentHandler(AbstractRequestHandler):
                 'messages': [{'role': 'user', 'content': prompt}]
             }
 
-            # Make API request
-            response = requests.post(
-                'https://openrouter.ai/api/v1/chat/completions',
-                headers=headers,
-                json=data
-            )
+            # Make API request with timing
+            start_time = time.time()
+            try:
+                subsegment = xray_recorder.begin_subsegment('openrouter_api_call')
+                subsegment.put_annotation('prompt', prompt)
+                
+                logger.info(f"Making API request to OpenRouter. RequestId: {request_id}")
+                response = requests.post(
+                    'https://openrouter.ai/api/v1/chat/completions',
+                    headers=headers,
+                    json=data
+                )
+                
+                api_duration = time.time() - start_time
+                logger.info(f"API call completed in {api_duration:.2f} seconds. Status: {response.status_code}")
+                
+                subsegment.put_metadata('response_time', api_duration)
+                subsegment.put_metadata('status_code', response.status_code)
+            finally:
+                xray_recorder.end_subsegment()
             
             # Check for credit-related errors
             if response.status_code == 402 or response.status_code == 429:
                 error_data = response.json()
+                logger.error(f"API error response: {error_data}")
                 if any(keyword in str(error_data).lower() for keyword in ['credit', 'quota', 'payment', 'billing']):
                     return (
                         handler_input.response_builder
@@ -88,6 +122,7 @@ class AskDeepseekIntentHandler(AbstractRequestHandler):
             # Parse response
             result = response.json()
             response_text = result['choices'][0]['message']['content']
+            logger.info(f"Received API response. Length: {len(response_text)} chars")
 
             # Format response for Alexa with appropriate voice and follow-up
             speak_output = self.format_response(
@@ -102,6 +137,18 @@ class AskDeepseekIntentHandler(AbstractRequestHandler):
             )
 
         except Exception as e:
+            logger.error(f"Error processing request: {str(e)}")
+            logger.error(f"Traceback: {traceback.format_exc()}")
+            
+            # Record error in X-Ray
+            subsegment = xray_recorder.current_subsegment()
+            if subsegment:
+                subsegment.add_error(
+                    'AskIntentError',
+                    str(e),
+                    traceback.format_exc()
+                )
+            
             speak_output = self.format_response(
                 "I'm having trouble thinking right now. Could you try asking me again?"
             )
@@ -118,6 +165,7 @@ class HelpIntentHandler(AbstractRequestHandler):
                handler_input.request_envelope.request.intent.name == "AMAZON.HelpIntent"
 
     def handle(self, handler_input):
+        logger.info("Handling HelpIntent")
         speak_output = ("I'm your DeepSeek friend, an AI that loves to explain complex topics. "
                        "You can ask me anything you're curious about, from science to history to technology. "
                        "For example, try asking 'what is quantum computing?' or "
@@ -137,6 +185,7 @@ class CancelAndStopIntentHandler(AbstractRequestHandler):
                 handler_input.request_envelope.request.intent.name == "AMAZON.StopIntent")
 
     def handle(self, handler_input):
+        logger.info("Handling CancelIntent or StopIntent")
         speak_output = "Goodbye! I enjoyed our chat. Come back anytime you want to learn something new!"
         
         return (
