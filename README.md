@@ -8,8 +8,8 @@ An Alexa skill that lets you chat with DeepSeek, an AI friend who provides clear
 - Friendly American female voice (Joanna)
 - Uses DeepSeek V3 model for accurate responses
 - Natural conversation style
-- Comprehensive error handling
-- Credit usage monitoring
+- Comprehensive error handling and monitoring
+- CloudWatch metrics and logging
 
 ## Usage
 
@@ -17,6 +17,92 @@ Just say:
 - "Alexa, ask friend deepseek what is quantum computing"
 - "Alexa, ask friend deepseek to explain black holes"
 - "Alexa, ask friend deepseek about artificial intelligence"
+
+## Monitoring and Debugging
+
+### CloudWatch Metrics
+
+All metrics are logged under the namespace `AlexaSkills/FriendDeepSeek`:
+
+1. **Usage Metrics**
+   - `LaunchCount` - Number of skill launches
+   - `AskCount` - Number of questions asked
+   - `HelpCount` - Number of help requests
+   - `StopCount` - Number of explicit stops
+   - `SessionEndedCount` - Number of session ends
+
+2. **Performance Metrics**
+   - `APIResponseTime` (Seconds) - Time taken for OpenRouter API responses
+   - `PromptLength` - Length of user prompts
+   - `ResponseLength` - Length of AI responses
+
+3. **Error Metrics**
+   - `APIError` - Count of API-related errors
+   - `ProcessingError` - Count of general processing errors
+   - `UnhandledError` - Count of unhandled exceptions
+
+### CloudWatch Logs
+
+The skill logs detailed information for debugging:
+
+1. **Request Logs**
+   - Skill invocation details
+   - User prompts
+   - Intent handling
+
+2. **Response Logs**
+   - API responses (truncated for privacy)
+   - Error details
+   - Processing steps
+
+### Monitoring Dashboard
+
+To create a CloudWatch dashboard:
+
+1. Go to AWS CloudWatch Console
+2. Create a new dashboard named "FriendDeepSeek"
+3. Add widgets for key metrics:
+   ```
+   # Usage Overview
+   SELECT SUM(LaunchCount), SUM(AskCount), SUM(HelpCount)
+   FROM "AlexaSkills/FriendDeepSeek"
+   GROUP BY 1h
+
+   # Error Rates
+   SELECT SUM(APIError), SUM(ProcessingError), SUM(UnhandledError)
+   FROM "AlexaSkills/FriendDeepSeek"
+   GROUP BY 1h
+
+   # Performance
+   SELECT AVG(APIResponseTime)
+   FROM "AlexaSkills/FriendDeepSeek"
+   GROUP BY 1m
+   ```
+
+### Alerts and Notifications
+
+Set up CloudWatch Alarms for:
+
+1. Error Rate Thresholds
+   ```
+   Metric: SUM(APIError + ProcessingError + UnhandledError)
+   Period: 5 minutes
+   Threshold: > 5
+   ```
+
+2. API Response Time
+   ```
+   Metric: AVG(APIResponseTime)
+   Period: 5 minutes
+   Threshold: > 3 seconds
+   ```
+
+3. Usage Anomalies
+   ```
+   Metric: SUM(AskCount)
+   Period: 1 hour
+   Anomaly Detection: 2 standard deviations
+   ```
 
 ## Skill Structure
 
@@ -55,7 +141,7 @@ This repository follows the Alexa-hosted skills package format:
 This skill is designed to be hosted on Alexa-hosted skills, which provides:
 - Free SSL certificate
 - AWS Lambda function
-- CloudWatch logs
+- CloudWatch logs and metrics
 - Auto-scaling
 
 ### Local Testing
@@ -81,19 +167,8 @@ This skill is designed to be hosted on Alexa-hosted skills, which provides:
 - Use AWS Lambda environment variables
 - Regularly rotate your API key
 - Monitor credit usage
-
-## Error Handling
-
-The skill provides clear feedback for different scenarios:
-
-1. API Key Issues:
-   - "I apologize, but I need to be properly configured first. Please contact the skill administrator."
-
-2. Credit-Related Errors:
-   - "I apologize, but we've run out of API credits. Please contact the skill administrator to add more credits."
-
-3. General Errors:
-   - "I'm having trouble thinking right now. Could you try asking me again?"
+- Review CloudWatch logs for suspicious activity
+- Set up CloudWatch alarms for security events
 
 ## Part of the AI Friends Series
 
@@ -104,4 +179,4 @@ This skill is part of a series of AI friend skills:
 
 ## License
 
-MIT License
+Apache-2.0
