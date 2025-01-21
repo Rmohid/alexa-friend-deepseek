@@ -1,0 +1,47 @@
+{
+    "interactionModel": {
+        "languageModel": {
+            "invocationName": "friend deepseek",
+            "intents": [
+                {
+                    "name": "AskIntent",
+                    "slots": [
+                        {
+                            "name": "prompt",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "what is {prompt}",
+                        "tell me about {prompt}",
+                        "explain {prompt}",
+                        "help me understand {prompt}",
+                        "can you explain {prompt}",
+                        "what do you know about {prompt}",
+                        "describe {prompt}",
+                        "give me information about {prompt}",
+                        "tell me more about {prompt}",
+                        "what can you tell me about {prompt}"
+                    ]
+                },
+                {
+                    "name": "AMAZON.StopIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.CancelIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.HelpIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.NavigateHomeIntent",
+                    "samples": []
+                }
+            ],
+            "types": []
+        }
+    }
+}

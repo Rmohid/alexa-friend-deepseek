@@ -1,0 +1,54 @@
+{
+    "manifest": {
+        "publishingInformation": {
+            "locales": {
+                "en-US": {
+                    "summary": "Chat with DeepSeek, your educational AI friend with clear explanations",
+                    "examplePhrases": [
+                        "Alexa, ask friend deepseek what is quantum computing",
+                        "Alexa, ask friend deepseek to explain black holes",
+                        "Alexa, ask friend deepseek about artificial intelligence"
+                    ],
+                    "keywords": [
+                        "AI",
+                        "education",
+                        "learning",
+                        "knowledge",
+                        "assistant",
+                        "deepseek"
+                    ],
+                    "name": "Friend DeepSeek",
+                    "description": "Chat with DeepSeek, your AI friend who provides clear, educational explanations in a friendly American female voice (Joanna). Perfect for learning about any topic, from science to history to technology.",
+                    "smallIconUri": "file://assets/images/en-US_smallIcon.png",
+                    "largeIconUri": "file://assets/images/en-US_largeIcon.png"
+                }
+            },
+            "isAvailableWorldwide": true,
+            "testingInstructions": "Required OpenRouter API key must be set in environment variables as OPENROUTER_API_KEY.",
+            "category": "KNOWLEDGE_AND_TRIVIA",
+            "distributionCountries": []
+        },
+        "apis": {
+            "custom": {
+                "endpoint": {
+                    "uri": "arn:aws:lambda:us-east-1:${YOUR_ACCOUNT_ID}:function:${SKILL_NAME}"
+                },
+                "interfaces": []
+            }
+        },
+        "manifestVersion": "1.0",
+        "privacyAndCompliance": {
+            "allowsPurchases": false,
+            "locales": {
+                "en-US": {
+                    "privacyPolicyUrl": "",
+                    "termsOfUseUrl": ""
+                }
+            },
+            "isExportCompliant": true,
+            "containsAds": false,
+            "isChildDirected": false,
+            "usesPersonalInfo": false
+        }
+    }
+}
