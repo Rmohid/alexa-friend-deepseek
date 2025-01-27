@@ -3,7 +3,7 @@
 from ask_sdk_core.skill_builder import SkillBuilder
 from ask_sdk_core.dispatch_components import AbstractRequestHandler, AbstractExceptionHandler
 from ask_sdk_core.handler_input import HandlerInput
-from ask_sdk_model import Response
+from ask_sdk_model import Response, SessionEndedRequest, LaunchRequest, IntentRequest
 import requests
 import json
 import os
@@ -43,16 +43,22 @@ def safe_end_subsegment():
         except Exception as e:
             logger.warning(f"Failed to end subsegment: {str(e)}")
 
-class LaunchRequestHandler(AbstractRequestHandler):
+class SessionEndedRequestHandler(AbstractRequestHandler):
+    """Handler for Session Ended requests."""
     def can_handle(self, handler_input):
-        # Add debug logging
-        request = handler_input.request_envelope.request
-        logger.info(f"LaunchRequestHandler - Request object type: {type(request)}")
-        logger.info(f"LaunchRequestHandler - Request object dir: {dir(request)}")
-        return handler_input.request_envelope.request.object_type == "LaunchRequest"
+        return isinstance(handler_input.request_envelope.request, SessionEndedRequest)
 
     def handle(self, handler_input):
-        logger.info("Handling LaunchRequest")
+        logger.info("In SessionEndedRequestHandler")
+        logger.info(f"Session ended with reason: {handler_input.request_envelope.request.reason}")
+        return handler_input.response_builder.response
+
+class LaunchRequestHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input):
+        return isinstance(handler_input.request_envelope.request, LaunchRequest)
+
+    def handle(self, handler_input):
+        logger.info("In LaunchRequestHandler")
         speak_output = ("Hi! I'm your DeepSeek friend, ready to help you understand anything. "
                        "What would you like to learn about? "
                        "Just ask me any question!")
@@ -66,12 +72,8 @@ class LaunchRequestHandler(AbstractRequestHandler):
 
 class AskDeepseekIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
-        # Add debug logging
-        request = handler_input.request_envelope.request
-        logger.info(f"AskDeepseekIntentHandler - Request object type: {type(request)}")
-        logger.info(f"AskDeepseekIntentHandler - Request object dir: {dir(request)}")
-        return handler_input.request_envelope.request.object_type == "IntentRequest" and \
-               handler_input.request_envelope.request.intent.name == "AskIntent"
+        return (isinstance(handler_input.request_envelope.request, IntentRequest) and
+                handler_input.request_envelope.request.intent.name == "AskIntent")
 
     def format_response(self, text):
         """Format response with SSML voice"""
@@ -217,15 +219,11 @@ class AskDeepseekIntentHandler(AbstractRequestHandler):
 
 class HelpIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
-        # Add debug logging
-        request = handler_input.request_envelope.request
-        logger.info(f"HelpIntentHandler - Request object type: {type(request)}")
-        logger.info(f"HelpIntentHandler - Request object dir: {dir(request)}")
-        return handler_input.request_envelope.request.object_type == "IntentRequest" and \
-               handler_input.request_envelope.request.intent.name == "AMAZON.HelpIntent"
+        return (isinstance(handler_input.request_envelope.request, IntentRequest) and
+                handler_input.request_envelope.request.intent.name == "AMAZON.HelpIntent")
 
     def handle(self, handler_input):
-        logger.info("Handling HelpIntent")
+        logger.info("In HelpIntentHandler")
         speak_output = ("I'm your DeepSeek friend, an AI that loves to explain complex topics. "
                        "You can ask me anything you're curious about, from science to history to technology. "
                        "For example, try asking 'what is quantum computing?' or "
@@ -240,16 +238,12 @@ class HelpIntentHandler(AbstractRequestHandler):
 
 class CancelAndStopIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
-        # Add debug logging
-        request = handler_input.request_envelope.request
-        logger.info(f"CancelAndStopIntentHandler - Request object type: {type(request)}")
-        logger.info(f"CancelAndStopIntentHandler - Request object dir: {dir(request)}")
-        return handler_input.request_envelope.request.object_type == "IntentRequest" and \
-               (handler_input.request_envelope.request.intent.name == "AMAZON.CancelIntent" or
-                handler_input.request_envelope.request.intent.name == "AMAZON.StopIntent")
+        return (isinstance(handler_input.request_envelope.request, IntentRequest) and
+                (handler_input.request_envelope.request.intent.name == "AMAZON.CancelIntent" or
+                 handler_input.request_envelope.request.intent.name == "AMAZON.StopIntent"))
 
     def handle(self, handler_input):
-        logger.info("Handling CancelIntent or StopIntent")
+        logger.info("In CancelAndStopIntentHandler")
         speak_output = "Goodbye! I enjoyed our chat. Come back anytime you want to learn something new!"
         
         return (
@@ -257,19 +251,6 @@ class CancelAndStopIntentHandler(AbstractRequestHandler):
                 .speak(speak_output)
                 .response
         )
-
-class SessionEndedRequestHandler(AbstractRequestHandler):
-    def can_handle(self, handler_input):
-        # Add debug logging
-        request = handler_input.request_envelope.request
-        logger.info(f"SessionEndedRequestHandler - Request object type: {type(request)}")
-        logger.info(f"SessionEndedRequestHandler - Request object dir: {dir(request)}")
-        return handler_input.request_envelope.request.object_type == "SessionEndedRequest"
-
-    def handle(self, handler_input):
-        # Any cleanup logic goes here
-        logger.info("Handling SessionEndedRequest")
-        return handler_input.response_builder.response
 
 class CatchAllExceptionHandler(AbstractExceptionHandler):
     def can_handle(self, handler_input, exception):
@@ -290,11 +271,13 @@ class CatchAllExceptionHandler(AbstractExceptionHandler):
 
 # Build the skill
 sb = SkillBuilder()
+
+# Add handlers in order of specificity
+sb.add_request_handler(SessionEndedRequestHandler())  # Add this first
 sb.add_request_handler(LaunchRequestHandler())
 sb.add_request_handler(AskDeepseekIntentHandler())
 sb.add_request_handler(HelpIntentHandler())
 sb.add_request_handler(CancelAndStopIntentHandler())
-sb.add_request_handler(SessionEndedRequestHandler())  # Add the session ended handler
 sb.add_exception_handler(CatchAllExceptionHandler())
 
 # Export the handler
