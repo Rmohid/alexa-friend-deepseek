@@ -1,12 +1,12 @@
-# Friend DeepSeek - Your Educational AI Companion
+# V. Three Please - Your Educational AI Companion
 
-An Alexa skill that lets you chat with DeepSeek, an AI friend who provides clear, educational explanations in a friendly American female voice.
+An Alexa skill that lets you chat with DeepSeek, an AI friend who provides clear, educational explanations in a friendly American male voice.
 
 ## Features
 
 - Clear, educational explanations of any topic
-- Friendly American female voice (Joanna)
-- Uses DeepSeek V3 model for accurate responses
+- Friendly American male voice (Matthew)
+- Uses DeepSeek Reasoner (R1) model for accurate responses
 - Natural conversation style
 - Comprehensive error handling and monitoring
 - CloudWatch metrics and logging
@@ -14,15 +14,15 @@ An Alexa skill that lets you chat with DeepSeek, an AI friend who provides clear
 ## Usage
 
 Just say:
-- "Alexa, ask friend deepseek what is quantum computing"
-- "Alexa, ask friend deepseek to explain black holes"
-- "Alexa, ask friend deepseek about artificial intelligence"
+- "Alexa, ask v. three please what is quantum computing"
+- "Alexa, ask v. three please to explain black holes"
+- "Alexa, ask v. three please about artificial intelligence"
 
 ## Monitoring and Debugging
 
 ### CloudWatch Metrics
 
-All metrics are logged under the namespace `AlexaSkills/FriendDeepSeek`:
+All metrics are logged under the namespace `AlexaSkills/VThreePlease`:
 
 1. **Usage Metrics**
    - `LaunchCount` - Number of skill launches
@@ -32,7 +32,7 @@ All metrics are logged under the namespace `AlexaSkills/FriendDeepSeek`:
    - `SessionEndedCount` - Number of session ends
 
 2. **Performance Metrics**
-   - `APIResponseTime` (Seconds) - Time taken for OpenRouter API responses
+   - `APIResponseTime` (Seconds) - Time taken for DeepSeek API responses
    - `PromptLength` - Length of user prompts
    - `ResponseLength` - Length of AI responses
 
@@ -60,22 +60,22 @@ The skill logs detailed information for debugging:
 To create a CloudWatch dashboard:
 
 1. Go to AWS CloudWatch Console
-2. Create a new dashboard named "FriendDeepSeek"
+2. Create a new dashboard named "VThreePlease"
 3. Add widgets for key metrics:
    ```
    # Usage Overview
    SELECT SUM(LaunchCount), SUM(AskCount), SUM(HelpCount)
-   FROM "AlexaSkills/FriendDeepSeek"
+   FROM "AlexaSkills/VThreePlease"
    GROUP BY 1h
 
    # Error Rates
    SELECT SUM(APIError), SUM(ProcessingError), SUM(UnhandledError)
-   FROM "AlexaSkills/FriendDeepSeek"
+   FROM "AlexaSkills/VThreePlease"
    GROUP BY 1h
 
    # Performance
    SELECT AVG(APIResponseTime)
-   FROM "AlexaSkills/FriendDeepSeek"
+   FROM "AlexaSkills/VThreePlease"
    GROUP BY 1m
    ```
 
@@ -126,15 +126,15 @@ This repository follows the Alexa-hosted skills package format:
 1. Create a new Alexa-hosted skill:
    - Go to [Alexa Developer Console](https://developer.amazon.com/alexa/console/ask)
    - Click "Create Skill"
-   - Name: "Friend DeepSeek"
+   - Name: "V. Three Please"
    - Choose "Custom" model
    - Choose "Alexa-Hosted (Python)"
    - Click "Import skill"
    - Enter this repository's .git URL
 
 2. Set Environment Variable:
-   - Key: `OPENROUTER_API_KEY`
-   - Value: Your OpenRouter API key
+   - Key: `DEEPSEEK_API_KEY`
+   - Value: Your DeepSeek API key (get it from [DeepSeek Platform](https://platform.deepseek.com/api_keys))
 
 ## Development
 
@@ -154,7 +154,7 @@ This skill is designed to be hosted on Alexa-hosted skills, which provides:
    ```
 3. Set environment variables:
    ```bash
-   export OPENROUTER_API_KEY=your_key_here
+   export DEEPSEEK_API_KEY=your_key_here
    ```
 4. Run tests:
    ```bash
@@ -163,7 +163,7 @@ This skill is designed to be hosted on Alexa-hosted skills, which provides:
 
 ## Security Notes
 
-- Never commit your OpenRouter API key
+- Never commit your DeepSeek API key
 - Use AWS Lambda environment variables
 - Regularly rotate your API key
 - Monitor credit usage
@@ -173,7 +173,7 @@ This skill is designed to be hosted on Alexa-hosted skills, which provides:
 ## Part of the AI Friends Series
 
 This skill is part of a series of AI friend skills:
-- Friend DeepSeek (this skill) - Educational explanations
+- V. Three Please (this skill) - Educational explanations
 - [Friend Grok](https://github.com/Rmohid/alexa-friend-grok) - Simple, fun explanations
 - [Friend GPT](https://github.com/Rmohid/alexa-friend-gpt) - Sophisticated insights
 
