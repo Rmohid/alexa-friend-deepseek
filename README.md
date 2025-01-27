@@ -170,13 +170,6 @@ This skill is designed to be hosted on Alexa-hosted skills, which provides:
 - Review CloudWatch logs for suspicious activity
 - Set up CloudWatch alarms for security events
 
-## Part of the AI Friends Series
-
-This skill is part of a series of AI friend skills:
-- V. Three Please (this skill) - Educational explanations
-- [Friend Grok](https://github.com/Rmohid/alexa-friend-grok) - Simple, fun explanations
-- [Friend GPT](https://github.com/Rmohid/alexa-friend-gpt) - Sophisticated insights
-
 ## License
 
 Apache-2.0
