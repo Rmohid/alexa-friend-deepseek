@@ -65,8 +65,8 @@ class LaunchRequestHandler(AbstractRequestHandler):
         
         return (
             handler_input.response_builder
-                .speak(speak_output)
-                .ask("What would you like to know?")
+                .speak(f'<speak><voice name="Matthew">{speak_output}</voice></speak>')
+                .ask(f'<speak><voice name="Matthew">What would you like to know?</voice></speak>')
                 .response
         )
 
@@ -77,7 +77,7 @@ class AskDeepseekIntentHandler(AbstractRequestHandler):
 
     def format_response(self, text):
         """Format response with SSML voice"""
-        return f'<speak><voice name="Joanna">{text}</voice></speak>'
+        return f'<speak><voice name="Matthew">{text}</voice></speak>'
 
     def handle(self, handler_input):
         subsegment = None
@@ -91,9 +91,9 @@ class AskDeepseekIntentHandler(AbstractRequestHandler):
             logger.info(f"Received prompt: {prompt}")
 
             # Get API key from environment
-            api_key = os.environ.get('OPENROUTER_API_KEY')
+            api_key = os.environ.get('DEEPSEEK_API_KEY')
             if not api_key:
-                logger.error("OPENROUTER_API_KEY environment variable not set")
+                logger.error("DEEPSEEK_API_KEY environment variable not set")
                 return (
                     handler_input.response_builder
                         .speak(self.format_response(
@@ -105,13 +105,11 @@ class AskDeepseekIntentHandler(AbstractRequestHandler):
             # Prepare API request
             headers = {
                 'Authorization': f'Bearer {api_key}',
-                'Content-Type': 'application/json',
-                'HTTP-Referer': 'https://github.com/Rmohid/alexa-friend-deepseek',
-                'X-Title': 'Alexa DeepSeek Friend'
+                'Content-Type': 'application/json'
             }
 
             data = {
-                'model': 'deepseek/deepseek-r1',
+                'model': 'deepseek-reasoner',
                 'messages': [
                     {
                         'role': 'system',
@@ -123,20 +121,21 @@ class AskDeepseekIntentHandler(AbstractRequestHandler):
                     }
                 ],
                 'temperature': 0.7,
-                'max_tokens': 150
+                'max_tokens': 150,
+                'stream': False
             }
 
             # Make API request with timing
             start_time = time.time()
-            subsegment = safe_begin_subsegment('openrouter_api_call')
+            subsegment = safe_begin_subsegment('deepseek_api_call')
             if subsegment:
                 subsegment.put_annotation('prompt', prompt)
             
-            logger.info(f"Making API request to OpenRouter. RequestId: {request_id}")
+            logger.info(f"Making API request to DeepSeek. RequestId: {request_id}")
             logger.info(f"Request data: {json.dumps(data)}")
             
             response = requests.post(
-                'https://openrouter.ai/api/v1/chat/completions',
+                'https://api.deepseek.com/chat/completions',
                 headers=headers,
                 json=data,
                 timeout=10  # Add timeout to prevent hanging
@@ -178,7 +177,7 @@ class AskDeepseekIntentHandler(AbstractRequestHandler):
             return (
                 handler_input.response_builder
                     .speak(speak_output)
-                    .ask("What else would you like to learn about?")
+                    .ask(self.format_response("What else would you like to learn about?"))
                     .response
             )
 
@@ -189,7 +188,7 @@ class AskDeepseekIntentHandler(AbstractRequestHandler):
                     .speak(self.format_response(
                         "I'm sorry, but the request took too long. Please try asking again."
                     ))
-                    .ask("What would you like to know?")
+                    .ask(self.format_response("What would you like to know?"))
                     .response
             )
         except requests.exceptions.RequestException as e:
@@ -199,7 +198,7 @@ class AskDeepseekIntentHandler(AbstractRequestHandler):
                     .speak(self.format_response(
                         "I'm having trouble connecting right now. Please try again in a moment."
                     ))
-                    .ask("What would you like to know?")
+                    .ask(self.format_response("What would you like to know?"))
                     .response
             )
         except Exception as e:
@@ -210,7 +209,7 @@ class AskDeepseekIntentHandler(AbstractRequestHandler):
                     .speak(self.format_response(
                         "I'm having trouble thinking right now. Could you try asking me again?"
                     ))
-                    .ask("What would you like to know?")
+                    .ask(self.format_response("What would you like to know?"))
                     .response
             )
         finally:
@@ -231,8 +230,8 @@ class HelpIntentHandler(AbstractRequestHandler):
         
         return (
             handler_input.response_builder
-                .speak(speak_output)
-                .ask("What would you like to know?")
+                .speak(f'<speak><voice name="Matthew">{speak_output}</voice></speak>')
+                .ask(f'<speak><voice name="Matthew">What would you like to know?</voice></speak>')
                 .response
         )
 
@@ -248,7 +247,7 @@ class CancelAndStopIntentHandler(AbstractRequestHandler):
         
         return (
             handler_input.response_builder
-                .speak(speak_output)
+                .speak(f'<speak><voice name="Matthew">{speak_output}</voice></speak>')
                 .response
         )
 
@@ -265,7 +264,7 @@ class CatchAllExceptionHandler(AbstractExceptionHandler):
         
         return (
             handler_input.response_builder
-                .speak(speak_output)
+                .speak(f'<speak><voice name="Matthew">{speak_output}</voice></speak>')
                 .response
         )
 
