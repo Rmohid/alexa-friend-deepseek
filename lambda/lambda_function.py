@@ -251,4 +251,6 @@ sb.add_request_handler(AskDeepseekIntentHandler())
 sb.add_request_handler(HelpIntentHandler())
 sb.add_request_handler(CancelAndStopIntentHandler())
 sb.add_exception_handler(CatchAllExceptionHandler())
-handler = sb.lambda_handler()
+
+# Export the handler
+lambda_handler = sb.lambda_handler()
