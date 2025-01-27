@@ -109,7 +109,7 @@ class AskDeepseekIntentHandler(AbstractRequestHandler):
             }
 
             data = {
-                'model': 'deepseek-ai/deepseek-chat-33b',
+                'model': 'deepseek/deepseek-r1',
                 'messages': [
                     {
                         'role': 'system',
@@ -258,6 +258,19 @@ class CancelAndStopIntentHandler(AbstractRequestHandler):
                 .response
         )
 
+class SessionEndedRequestHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input):
+        # Add debug logging
+        request = handler_input.request_envelope.request
+        logger.info(f"SessionEndedRequestHandler - Request object type: {type(request)}")
+        logger.info(f"SessionEndedRequestHandler - Request object dir: {dir(request)}")
+        return handler_input.request_envelope.request.object_type == "SessionEndedRequest"
+
+    def handle(self, handler_input):
+        # Any cleanup logic goes here
+        logger.info("Handling SessionEndedRequest")
+        return handler_input.response_builder.response
+
 class CatchAllExceptionHandler(AbstractExceptionHandler):
     def can_handle(self, handler_input, exception):
         return True
@@ -281,6 +294,7 @@ sb.add_request_handler(LaunchRequestHandler())
 sb.add_request_handler(AskDeepseekIntentHandler())
 sb.add_request_handler(HelpIntentHandler())
 sb.add_request_handler(CancelAndStopIntentHandler())
+sb.add_request_handler(SessionEndedRequestHandler())  # Add the session ended handler
 sb.add_exception_handler(CatchAllExceptionHandler())
 
 # Export the handler
