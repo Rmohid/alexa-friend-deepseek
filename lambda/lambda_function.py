@@ -49,7 +49,7 @@ class LaunchRequestHandler(AbstractRequestHandler):
         request = handler_input.request_envelope.request
         logger.info(f"LaunchRequestHandler - Request object type: {type(request)}")
         logger.info(f"LaunchRequestHandler - Request object dir: {dir(request)}")
-        return handler_input.request_envelope.request.type == "LaunchRequest"
+        return handler_input.request_envelope.request.object_type == "LaunchRequest"
 
     def handle(self, handler_input):
         logger.info("Handling LaunchRequest")
@@ -70,7 +70,7 @@ class AskDeepseekIntentHandler(AbstractRequestHandler):
         request = handler_input.request_envelope.request
         logger.info(f"AskDeepseekIntentHandler - Request object type: {type(request)}")
         logger.info(f"AskDeepseekIntentHandler - Request object dir: {dir(request)}")
-        return handler_input.request_envelope.request.type == "IntentRequest" and \
+        return handler_input.request_envelope.request.object_type == "IntentRequest" and \
                handler_input.request_envelope.request.intent.name == "AskIntent"
 
     def format_response(self, text):
@@ -206,7 +206,7 @@ class HelpIntentHandler(AbstractRequestHandler):
         request = handler_input.request_envelope.request
         logger.info(f"HelpIntentHandler - Request object type: {type(request)}")
         logger.info(f"HelpIntentHandler - Request object dir: {dir(request)}")
-        return handler_input.request_envelope.request.type == "IntentRequest" and \
+        return handler_input.request_envelope.request.object_type == "IntentRequest" and \
                handler_input.request_envelope.request.intent.name == "AMAZON.HelpIntent"
 
     def handle(self, handler_input):
@@ -229,7 +229,7 @@ class CancelAndStopIntentHandler(AbstractRequestHandler):
         request = handler_input.request_envelope.request
         logger.info(f"CancelAndStopIntentHandler - Request object type: {type(request)}")
         logger.info(f"CancelAndStopIntentHandler - Request object dir: {dir(request)}")
-        return handler_input.request_envelope.request.type == "IntentRequest" and \
+        return handler_input.request_envelope.request.object_type == "IntentRequest" and \
                (handler_input.request_envelope.request.intent.name == "AMAZON.CancelIntent" or
                 handler_input.request_envelope.request.intent.name == "AMAZON.StopIntent")
 
