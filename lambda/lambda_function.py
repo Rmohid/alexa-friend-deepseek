@@ -104,12 +104,24 @@ class AskDeepseekIntentHandler(AbstractRequestHandler):
             headers = {
                 'Authorization': f'Bearer {api_key}',
                 'Content-Type': 'application/json',
-                'HTTP-Referer': 'http://localhost:3000',
+                'HTTP-Referer': 'https://github.com/Rmohid/alexa-friend-deepseek',
+                'X-Title': 'Alexa DeepSeek Friend'
             }
 
             data = {
-                'model': "deepseek-ai/deepseek-v3",
-                'messages': [{'role': 'user', 'content': prompt}]
+                'model': 'deepseek-ai/deepseek-chat-33b',
+                'messages': [
+                    {
+                        'role': 'system',
+                        'content': 'You are a helpful AI assistant that provides clear, concise answers suitable for voice interaction.'
+                    },
+                    {
+                        'role': 'user',
+                        'content': prompt
+                    }
+                ],
+                'temperature': 0.7,
+                'max_tokens': 150
             }
 
             # Make API request with timing
@@ -119,6 +131,8 @@ class AskDeepseekIntentHandler(AbstractRequestHandler):
                 subsegment.put_annotation('prompt', prompt)
             
             logger.info(f"Making API request to OpenRouter. RequestId: {request_id}")
+            logger.info(f"Request data: {json.dumps(data)}")
+            
             response = requests.post(
                 'https://openrouter.ai/api/v1/chat/completions',
                 headers=headers,
@@ -128,6 +142,7 @@ class AskDeepseekIntentHandler(AbstractRequestHandler):
             
             api_duration = time.time() - start_time
             logger.info(f"API call completed in {api_duration:.2f} seconds. Status: {response.status_code}")
+            logger.info(f"API response: {response.text}")
             
             if subsegment:
                 subsegment.put_metadata('response_time', api_duration)
